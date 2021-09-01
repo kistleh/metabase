@@ -10,6 +10,7 @@ import Table from "metabase/visualizations/visualizations/Table";
 
 import EmptyState from "metabase/components/EmptyState";
 import Icon from "metabase/components/Icon";
+import IconButtonWrapper from "metabase/components/IconButtonWrapper";
 
 import NoResults from "assets/img/no_results.svg";
 
@@ -25,6 +26,7 @@ const propTypes = {
   visualizationIsClickable: PropTypes.func,
   onVisualizationClick: PropTypes.func,
   onSortingChange: PropTypes.func,
+  onRemoveRow: PropTypes.func,
   settings: PropTypes.object,
   isSortable: PropTypes.bool,
   sorting: PropTypes.shape({
@@ -69,7 +71,10 @@ export default class AuditTableVisualization extends React.Component {
       onVisualizationClick,
       settings,
       isSortable,
+      onRemoveRow,
     } = this.props;
+
+    const canRemoveRows = !!onRemoveRow;
 
     const columnIndexes = settings["table.columns"]
       .filter(({ enabled }) => enabled)
@@ -149,6 +154,14 @@ export default class AuditTableVisualization extends React.Component {
                   </td>
                 );
               })}
+
+              {/* {canRemoveRows && ( */}
+              <td>
+                <IconButtonWrapper onClick={() => onRemoveRow(row)}>
+                  <Icon name="close" />
+                </IconButtonWrapper>
+              </td>
+              {/* )} */}
             </tr>
           ))}
         </tbody>

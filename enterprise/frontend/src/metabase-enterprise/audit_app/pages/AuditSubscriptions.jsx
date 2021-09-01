@@ -1,38 +1,23 @@
 import React from "react";
 import { t } from "ttag";
+import AuditAlertsTab from "../components/AuditAlertsTab";
 
 import AuditContent from "../components/AuditContent";
-import AuditTableWithSearch from "../containers/AuditTableWithSearch";
-
-import * as SubscriptionAlertsCards from "../lib/cards/subscriptions_alerts";
+import AuditSubscriptionsTab from "../components/AuditSubscriptionsTab";
 
 const AuditSubscriptions = props => (
   <AuditContent {...props} tabs={AuditSubscriptions.tabs} />
 );
 
-const AuditSubscriptionsTab = () => (
-  <AuditTableWithSearch
-    placeholder={t`Filter by dashboard name`}
-    table={SubscriptionAlertsCards.subscriptions()}
-  />
-);
-
-const AuditAlertsTab = () => (
-  <AuditTableWithSearch
-    placeholder={t`Filter by question name`}
-    table={SubscriptionAlertsCards.alerts()}
-  />
-);
-
 AuditSubscriptions.tabs = [
   {
     path: "subscriptions",
-    title: "Subscriptions",
+    title: t`Subscriptions`,
     component: AuditSubscriptionsTab,
   },
   {
     path: "alerts",
-    title: "Alerts",
+    title: t`Alerts`,
     component: AuditAlertsTab,
   },
 ];
