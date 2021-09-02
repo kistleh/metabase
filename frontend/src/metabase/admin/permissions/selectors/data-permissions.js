@@ -18,12 +18,14 @@ import {
   getSchemasPermission,
   getTablesPermission,
   diffPermissions,
+  isRestrictivePermission,
 } from "metabase/lib/permissions";
 import {
   DATA_ACCESS_IS_REQUIRED,
   UNABLE_TO_CHANGE_ADMIN_PERMISSIONS,
 } from "../constants/messages";
 import {
+  PLUGIN_ADMIN_PERMISSIONS_DATABASE_RESTRICTIVE_OPTIONS,
   PLUGIN_ADMIN_PERMISSIONS_TABLE_FIELDS_ACTIONS,
   PLUGIN_ADMIN_PERMISSIONS_TABLE_FIELDS_OPTIONS,
   PLUGIN_ADMIN_PERMISSIONS_TABLE_FIELDS_POST_ACTION,
@@ -203,14 +205,19 @@ const NATIVE_QUERIES_OPTIONS = [
   DATA_PERMISSION_OPTIONS.none,
 ];
 
-const getTableAndFieldAccessOptions = value =>
-  value === DATA_PERMISSION_OPTIONS.block.value
-    ? [DATA_PERMISSION_OPTIONS.block]
-    : [
-        DATA_PERMISSION_OPTIONS.all,
-        ...PLUGIN_ADMIN_PERMISSIONS_TABLE_FIELDS_OPTIONS,
-        DATA_PERMISSION_OPTIONS.noSelfService,
-      ];
+const getTableAndFieldAccessOptions = value => {
+  const shouldIncludePluginPermissions = PLUGIN_ADMIN_PERMISSIONS_DATABASE_RESTRICTIVE_OPTIONS.some(
+    option => option.value === value,
+  );
+  return [
+    DATA_PERMISSION_OPTIONS.all,
+    ...PLUGIN_ADMIN_PERMISSIONS_TABLE_FIELDS_OPTIONS,
+    DATA_PERMISSION_OPTIONS.noSelfService,
+    ...(shouldIncludePluginPermissions
+      ? PLUGIN_ADMIN_PERMISSIONS_DATABASE_RESTRICTIVE_OPTIONS
+      : []),
+  ];
+};
 
 const buildFieldsPermissions = (
   entityId,
@@ -256,7 +263,7 @@ const buildFieldsPermissions = (
   return [
     {
       name: "access",
-      isDisabled: isAdmin || value === DATA_PERMISSION_OPTIONS.block.value,
+      isDisabled: isAdmin,
       disabledTooltip: isAdmin ? UNABLE_TO_CHANGE_ADMIN_PERMISSIONS : null,
       isHighlighted: isAdmin,
       value,
@@ -408,9 +415,7 @@ const buildDatabasePermissions = (
   ];
 
   const isNativePermissionDisabled =
-    isAdmin ||
-    accessPermissionValue === DATA_PERMISSION_OPTIONS.none.value ||
-    accessPermissionValue === DATA_PERMISSION_OPTIONS.none.block;
+    isAdmin || isRestrictivePermission(accessPermissionValue);
 
   return [
     {
@@ -425,7 +430,7 @@ const buildDatabasePermissions = (
         DATA_PERMISSION_OPTIONS.all,
         DATA_PERMISSION_OPTIONS.controlled,
         DATA_PERMISSION_OPTIONS.noSelfService,
-        DATA_PERMISSION_OPTIONS.block,
+        ...PLUGIN_ADMIN_PERMISSIONS_DATABASE_RESTRICTIVE_OPTIONS,
       ],
       postActions: {
         controlled: () =>
